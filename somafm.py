@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # Python frontend for playing SomaFM with MPlayer
+# Written by Tom Nardi (MS3FGX@gmail.com)
 # Licensed under the GPLv3, see "COPYING"
-version = "1.0"
+version = "1.1-dev"
 
 import re
 import os
@@ -11,9 +12,9 @@ import shutil
 import signal
 import requests
 import argparse
-import datetime
 import colorama
 import subprocess
+from datetime import datetime
 from colorama import Fore, Style
 from collections import OrderedDict
 
@@ -161,6 +162,9 @@ with open (channel_file, 'rb') as fp:
 # Find playlist for given channel
 stream_url = getPLS(args.channel)
 
+# Record the start time
+start_time = datetime.now()
+
 # Open stream
 print("Loading stream...", end='')
 playstream = subprocess.Popen(['mplayer', '-playlist', stream_url], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=False)
@@ -179,8 +183,14 @@ for line in playstream.stdout:
     if line.startswith(b'ICY Info:'):
         info = line.decode().split(':', 1)[1].strip()
         attrs = dict(re.findall("(\w+)='([^']*)'", info))
-        print(Fore.BLUE + datetime.datetime.now().strftime("%H:%M:%S"), end=' | ')
+        print(Fore.BLUE + datetime.now().strftime("%H:%M:%S"), end=' | ')
         print(Fore.GREEN + attrs.get('StreamTitle', '(none)'))
 
-print(Fore.RESET + "Playback stopped.")
+# Calculate how long we were playing
+time_elapsed = datetime.now() - start_time
+hours, remainder = divmod(int(time_elapsed.total_seconds()), 3600)
+minutes, seconds = divmod(remainder, 60)
+
+# Print exit message
+print(Fore.RESET + "Playback stopped after {:02}:{:02}:{:02}".format(int(hours), int(minutes), int(seconds)))
 # EOF
