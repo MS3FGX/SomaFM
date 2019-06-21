@@ -24,11 +24,26 @@ quality_num = 0
 # Default channel to play
 default_chan = "Groove Salad"
 
+# Enable/Disable experimental desktop notifications
+desktop_notifications = False
+
+# Following variables should probably be left alone
+#-----------------------------------------------------------------------
+
 # SomaFM channel list
 url = "https://somafm.com/channels.json"
 
-# File to keep local copy
-channel_file = "/tmp/soma_channels"
+# Directory for cache
+cache_dir = "/tmp/soma_cache"
+
+# Directory for channel icons
+icon_dir = cache_dir + "/icons"
+
+# Default image size for icons
+image_size = "xlimage"
+
+# File name for channel cache
+channel_file = cache_dir + "/channel_list"
 
 # Define functions
 #-----------------------------------------------------------------------#
@@ -72,6 +87,38 @@ def downloadChannels():
 
     print("OK")
 
+# Download channel icons
+def downloadIcons():
+    # Create icon directory if don't exist
+    if not os.path.exists(icon_dir):
+        os.mkdir(icon_dir)
+
+    # If there are already icons, return
+    if os.listdir(icon_dir):
+        return
+
+    # Let user know we're downloading
+    print("Downloading channel icons", end='')
+    sys.stdout.flush()
+
+    for channel in channel_list:
+        # Download current icon
+        current_icon = requests.get(channel[image_size])
+
+        # Construct path
+        icon_path = icon_dir + "/" + os.path.basename(channel[image_size])
+
+        # Save it to file
+        with open(icon_path, 'wb') as saved_icon:
+            saved_icon.write(current_icon.content)
+
+        # Print a dot so user knows we're moving
+        print(".", end='')
+        sys.stdout.flush()
+
+    # If we get here, all done
+    print("OK")
+
 # Loop through channels and print their descriptions
 def listChannels():
     # Loop through channels
@@ -105,17 +152,31 @@ def showStats():
     print(Fore.YELLOW + '{:>4}'.format(listeners) + Fore.BLUE, end=' : ')
     print(Fore.CYAN + "Total Listeners" + Fore.RESET)
 
-# Return playlist URL for given channel name
-def getPLS(channel_name):
+# Make sure the channel is in the local channel list
+def checkChannel(channel_name):
     for channel in channel_list:
         if channel_name == channel['title']:
-            return(channel['playlists'][quality_num]['url'])
+            # We're good
+            return()
 
     # If we get here, no match
     print(Fore.RED + "Channel not found!")
     print(Fore.WHITE + "Double check the name of the channel and try again.")
     print("Channel names must be entered EXACTLY as they are seen in the list.")
     exit()
+
+# IMPORTANT: Verify channel exists before running the following functions
+# Return playlist URL for given channel name
+def getPLS(channel_name):
+    for channel in channel_list:
+        if channel_name == channel['title']:
+            return(channel['playlists'][quality_num]['url'])
+
+# Return icon filename for given channel
+def getIcon(channel_name):
+    for channel in channel_list:
+        if channel_name == channel['title']:
+            return(icon_dir + "/" + os.path.basename(channel[image_size]))
 
 # Execution below this line
 #-----------------------------------------------------------------------#
@@ -126,13 +187,22 @@ signal.signal(signal.SIGINT, signal_handler)
 parser = argparse.ArgumentParser(description='Simple Python 3 player for SomaFM, version ' + version)
 parser.add_argument('-l', '--list', action='store_true', help='Download and display list of channels')
 parser.add_argument('-s', '--stats', action='store_true', help='Display current listener stats')
+parser.add_argument('-n', '--notify', action='store_true', help='Enable experimental desktop notifications for this session')
 parser.add_argument("channel", nargs='?', const=1, default=default_chan, help="Channel to stream. Default is Groove Salad")
 args = parser.parse_args()
+
+# Enable desktop notifications
+if args.notify:
+    desktop_notifications = True
 
 # Get screen ready
 colorama.init()
 os.system('clear')
 print(Style.BRIGHT, end='')
+
+# Create cache directory if doesn't exist
+if not os.path.exists(cache_dir):
+    os.mkdir(cache_dir)
 
 if args.list:
     # Always download, this allows manual update
@@ -152,12 +222,27 @@ if shutil.which("mplayer") == None:
     print(Fore.WHITE + "MPlayer is required for this script to function.")
     exit()
 
+# See if we already have a channel list
 if os.path.isfile(channel_file) == False:
     downloadChannels()
 
 # Load local channel list
 with open (channel_file, 'rb') as fp:
     channel_list = pickle.load(fp)
+
+# Sanity check for desktop notifications
+if desktop_notifications:
+    # See if we have notify-send
+    if shutil.which("notify-send") == None:
+        # If we don't, turn off notifications and warn user
+        desktop_notifications = False
+        print(Fore.RED + "Desktop notifications not supported on this system!" + Fore.WHITE)
+    else:
+        # Otherwise, get icons
+        downloadIcons()
+
+# See if given channel exists before we go any farther
+checkChannel(args.channel)
 
 # Find playlist for given channel
 stream_url = getPLS(args.channel)
@@ -185,6 +270,10 @@ for line in playstream.stdout:
         attrs = dict(re.findall("(\w+)='([^']*)'", info))
         print(Fore.BLUE + datetime.now().strftime("%H:%M:%S"), end=' | ')
         print(Fore.GREEN + attrs.get('StreamTitle', '(none)'))
+
+        # Send desktop notification
+        if desktop_notifications:
+            subprocess.Popen(['notify-send', '-i', getIcon(args.channel), attrs.get('StreamTitle', '(none)')])
 
 # Calculate how long we were playing
 time_elapsed = datetime.now() - start_time
