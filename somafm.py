@@ -2,7 +2,7 @@
 # Python frontend for playing SomaFM with MPlayer
 # Written by Tom Nardi (MS3FGX@gmail.com)
 # Licensed under the GPLv3, see "COPYING"
-version = "1.1-dev"
+version = "1.1"
 
 import re
 import os
