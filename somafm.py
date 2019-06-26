@@ -181,6 +181,7 @@ signal.signal(signal.SIGINT, signal_handler)
 parser = argparse.ArgumentParser(description='Simple Python 3 player for SomaFM, version ' + version)
 parser.add_argument('-l', '--list', action='store_true', help='Download and display list of channels')
 parser.add_argument('-s', '--stats', action='store_true', help='Display current listener stats')
+parser.add_argument('-p', '--purge', action='store_true', help='Delete cache files')
 parser.add_argument('-n', '--notify', action='store_true', help='Enable experimental desktop notifications for this session')
 parser.add_argument("channel", nargs='?', const=1, default=default_chan, help="Channel to stream. Default is Groove Salad")
 args = parser.parse_args()
@@ -188,6 +189,18 @@ args = parser.parse_args()
 # Enable desktop notifications
 if args.notify:
     desktop_notifications = True
+
+# Delete cache directory, exit
+if args.purge:
+    try:
+        shutil.rmtree(cache_dir)
+    except:
+        print("Error while clearing cache!")
+        exit()
+
+    # If we get here, sucess
+    print("Cache cleared.")
+    exit()
 
 # Get screen ready
 colorama.init()

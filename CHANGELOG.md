@@ -1,6 +1,7 @@
 # Version History
 
 ### June 26th, 2019
+- Add cache purge option
 - Improve channel matching
 
 ### June 23rd, 2019
