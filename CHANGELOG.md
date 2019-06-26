@@ -1,5 +1,8 @@
 # Version History
 
+### June 26th, 2019
+- Improve channel matching
+
 ### June 23rd, 2019
 - Release as v1.1
 

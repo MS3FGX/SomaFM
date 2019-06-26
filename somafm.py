@@ -2,7 +2,7 @@
 # Python frontend for playing SomaFM with MPlayer
 # Written by Tom Nardi (MS3FGX@gmail.com)
 # Licensed under the GPLv3, see "COPYING"
-version = "1.1"
+version = "1.2-dev"
 
 import re
 import os
@@ -152,31 +152,25 @@ def showStats():
     print(Fore.YELLOW + '{:>4}'.format(listeners) + Fore.BLUE, end=' : ')
     print(Fore.CYAN + "Total Listeners" + Fore.RESET)
 
-# Make sure the channel is in the local channel list
-def checkChannel(channel_name):
+# Return information for given channel
+def channelGet(request, channel_name):
     for channel in channel_list:
-        if channel_name == channel['title']:
-            # We're good
-            return()
+        if channel_name.capitalize() == channel['title'].capitalize():
+            # Channel exists, now what?
+            if request == "VERIFY":
+                return()
+            elif request == "PLS":
+                return(channel['playlists'][quality_num]['url'])
+            elif request == "ICON":
+                return(icon_dir + "/" + os.path.basename(channel[image_size]))
+            else:
+                print(Fore.RED + "Unknown channel operation!")
+                exit()
 
     # If we get here, no match
     print(Fore.RED + "Channel not found!")
     print(Fore.WHITE + "Double check the name of the channel and try again.")
-    print("Channel names must be entered EXACTLY as they are seen in the list.")
     exit()
-
-# IMPORTANT: Verify channel exists before running the following functions
-# Return playlist URL for given channel name
-def getPLS(channel_name):
-    for channel in channel_list:
-        if channel_name == channel['title']:
-            return(channel['playlists'][quality_num]['url'])
-
-# Return icon filename for given channel
-def getIcon(channel_name):
-    for channel in channel_list:
-        if channel_name == channel['title']:
-            return(icon_dir + "/" + os.path.basename(channel[image_size]))
 
 # Execution below this line
 #-----------------------------------------------------------------------#
@@ -241,11 +235,8 @@ if desktop_notifications:
         # Otherwise, get icons
         downloadIcons()
 
-# See if given channel exists before we go any farther
-checkChannel(args.channel)
-
 # Find playlist for given channel
-stream_url = getPLS(args.channel)
+stream_url = channelGet("PLS", args.channel)
 
 # Record the start time
 start_time = datetime.now()
@@ -273,7 +264,7 @@ for line in playstream.stdout:
 
         # Send desktop notification
         if desktop_notifications:
-            subprocess.Popen(['notify-send', '-i', getIcon(args.channel), attrs.get('StreamTitle', '(none)')])
+            subprocess.Popen(['notify-send', '-i', channelGet("ICON", args.channel), attrs.get('StreamTitle', '(none)')])
 
 # Calculate how long we were playing
 time_elapsed = datetime.now() - start_time
