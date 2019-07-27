@@ -1,5 +1,8 @@
 # Version History
 
+### July 27th, 2019
+- Add about screen with donation link
+
 ### June 26th, 2019
 - Add cache purge option
 - Improve channel matching

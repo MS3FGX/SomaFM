@@ -14,6 +14,7 @@ import requests
 import argparse
 import colorama
 import subprocess
+from random import randrange
 from datetime import datetime
 from colorama import Fore, Style
 from collections import OrderedDict
@@ -181,6 +182,7 @@ signal.signal(signal.SIGINT, signal_handler)
 parser = argparse.ArgumentParser(description='Simple Python 3 player for SomaFM, version ' + version)
 parser.add_argument('-l', '--list', action='store_true', help='Download and display list of channels')
 parser.add_argument('-s', '--stats', action='store_true', help='Display current listener stats')
+parser.add_argument('-a', '--about', action='store_true', help='Show information about SomaFM')
 parser.add_argument('-p', '--purge', action='store_true', help='Delete cache files')
 parser.add_argument('-n', '--notify', action='store_true', help='Enable experimental desktop notifications for this session')
 parser.add_argument("channel", nargs='?', const=1, default=default_chan, help="Channel to stream. Default is Groove Salad")
@@ -206,6 +208,42 @@ if args.purge:
 colorama.init()
 os.system('clear')
 print(Style.BRIGHT, end='')
+
+if args.about:
+    # I can't decide which one I like best, so let's use them all!
+    randlogo = randrange(3)
+    if randlogo == 0:
+        print(Fore.BLUE + "   _____                  " + Fore.GREEN + "     ________  ___")
+        print(Fore.BLUE + "  / ___/____  ____ ___  ____ _" + Fore.GREEN + "/ ____/  |/  /")
+        print(Fore.BLUE + "  \__ \/ __ \/ __ `__ \/ __ `" + Fore.GREEN + "/ /_  / /|_/ / ")
+        print(Fore.BLUE + " ___/ / /_/ / / / / / / /_/ " + Fore.GREEN + "/ __/ / /  / /  ")
+        print(Fore.BLUE + "/____/\____/_/ /_/ /_/\__,_" + Fore.GREEN + "/_/   /_/  /_/   ")
+    elif randlogo == 1:
+        print(Fore.BLUE + " __" + Fore.GREEN + "                         ___")
+        print(Fore.BLUE + "/ _\ ___  _ __ ___   __ _  " + Fore.GREEN + "/ __\/\/\   ")
+        print(Fore.BLUE + "\ \ / _ \| '_ ` _ \ / _` |" + Fore.GREEN + "/ _\ /    \  ")
+        print(Fore.BLUE + "_\ \ (_) | | | | | | (_| " + Fore.GREEN + "/ /  / /\/\ \ ")
+        print(Fore.BLUE + "\__/\___/|_| |_| |_|\__,_" + Fore.GREEN + "\/   \/    \/ ")
+    elif randlogo == 2:
+        print(Fore.BLUE + " ______     ______     __    __     ______  " + Fore.GREEN + "   ______   __    __    ")
+        print(Fore.BLUE + "/\  ___\   /\  __ \   /\ '-./  \   /\  __ \ " + Fore.GREEN + "  /\  ___\ /\ '-./  \   ")
+        print(Fore.BLUE + "\ \___  \  \ \ \/\ \  \ \ \-./\ \  \ \  __ \ " + Fore.GREEN + " \ \  __\ \ \ \-./\ \  ")
+        print(Fore.BLUE + " \/\_____\  \ \_____\  \ \_\ \ \_\  \ \_\ \_\ " + Fore.GREEN + " \ \_\    \ \_\ \ \_\ ")
+        print(Fore.BLUE + "  \/_____/   \/_____/   \/_/  \/_/   \/_/\/_/ " + Fore.GREEN + "  \/_/     \/_/  \/_/ ")
+
+    print(Fore.WHITE + "")
+    print("SomaFM is a listener-supported Internet-only radio station.")
+    print("")
+    print("That means no advertising or annoying commercial interruptions. SomaFM's")
+    print("mission is to search for and expose great new music which people may")
+    print("otherwise never encounter.")
+    print("")
+    print("If you like what you hear on SomaFM and want to help, please consider")
+    print("visiting their site and making a donation.")
+    print("")
+    print(Fore.BLUE + "https://somafm.com/support/")
+    print("")
+    exit()
 
 # Create cache directory if doesn't exist
 if not os.path.exists(cache_dir):
