@@ -1,5 +1,8 @@
 # Version History
 
+### August 5th, 2019
+- Fuzzy channel matching
+
 ### July 27th, 2019
 - Add about screen with donation link
 

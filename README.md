@@ -18,6 +18,12 @@ Simply running `somafm.py` with no options will start streaming "Groove Salad." 
 ```console
 ./somafm.py "DEF CON Radio"
 ```
+
+Channel entry is not case sensitive and uses a certain amount of "fuzzy" matching. So rather than typing out the entire name, the following will also work:
+
+```console
+./somafm.py def
+```
 In addition, the following options are available:
 
 #### --list
@@ -29,7 +35,7 @@ Download the latest master list of SomaFM channels and display their description
 This option shows the number of listeners for each currently online SomaFM channel, along with a total listener count.
 
 ## Desktop Notifications
-There is currently support for experimental desktop notifications on Linux using libnotify. They can be enabled by changing the value of the boolean variable `desktop_notifications` or turned on temporarily with the `-n` option.
+There is currently experimental support for desktop notifications on Linux using libnotify. They can be enabled by changing the value of the boolean variable `desktop_notifications` or turned on temporarily with the `-n` option.
 
 ![notifications](screenshots/notifications.png)
 

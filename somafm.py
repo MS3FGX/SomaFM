@@ -156,7 +156,7 @@ def showStats():
 # Return information for given channel
 def channelGet(request, channel_name):
     for channel in channel_list:
-        if channel_name.capitalize() == channel['title'].capitalize():
+        if channel_name.capitalize() in channel['title'].capitalize():
             # Channel exists, now what?
             if request == "VERIFY":
                 return()
