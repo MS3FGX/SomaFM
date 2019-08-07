@@ -19,11 +19,24 @@ from datetime import datetime
 from colorama import Fore, Style
 from collections import OrderedDict
 
+# Optional Chromecast support, don't error if can't import
+try:
+    import pychromecast
+    chromecast_support = True
+except ImportError:
+    chromecast_support = False
+
+# Basic config options:
+#-----------------------------------------------------------------------
+
 # Default quality (0 is highest available)
 quality_num = 0
 
 # Default channel to play
 default_chan = "Groove Salad"
+
+# Name of Chromecast device
+chromecast_name = "The Office"
 
 # Enable/Disable experimental desktop notifications
 desktop_notifications = False
@@ -162,8 +175,14 @@ def channelGet(request, channel_name):
                 return()
             elif request == "PLS":
                 return(channel['playlists'][quality_num]['url'])
+            elif request == "NAME":
+                return(channel['title'])
+            elif request == "DESC":
+                return(channel['description'])
             elif request == "ICON":
                 return(icon_dir + "/" + os.path.basename(channel[image_size]))
+            elif request == "ICON_URL":
+                return(channel[image_size])
             else:
                 print(Fore.RED + "Unknown channel operation!")
                 exit()
@@ -171,6 +190,58 @@ def channelGet(request, channel_name):
     # If we get here, no match
     print(Fore.RED + "Channel not found!")
     print(Fore.WHITE + "Double check the name of the channel and try again.")
+    exit()
+
+# Stream channel on Chromecast
+def startCast(channel_name):
+    # Download PLS
+    pls_file = requests.get(channelGet('PLS', args.channel))
+
+    # Split out MP3 URL
+    for line in pls_file.text.splitlines():
+        if "File1" in line:
+            stream_url = line.split('=')[1]
+
+    # Get stream name to use elsewhere
+    stream_name = channelGet('NAME', channel_name)
+
+    # Now try to communicate with CC
+    print("Connecting to", chromecast_name, end='...')
+    sys.stdout.flush()
+    try:
+        chromecasts = pychromecast.get_chromecasts()
+        cast = next(cc for cc in chromecasts if cc.device.friendly_name == chromecast_name)
+    except:
+        print(Fore.RED + "FAILED")
+        print("")
+        print(Fore.WHITE + "Double check the device name and try again.")
+        exit()
+
+    # If we get here, device is online
+    # Attempt to start stream
+    try:
+        cast.wait()
+        stream = cast.media_controller
+        stream.play_media(stream_url, 'audio/mp3', stream_name, channelGet('ICON_URL', channel_name))
+        stream.block_until_active()
+    except:
+        print(Fore.RED + "FAILED")
+        print("")
+        print(Fore.WHITE + "Stream failed to start on Chromecast.")
+        exit()
+
+    print(Fore.GREEN + "OK")
+
+    # Print stream info
+    print(Fore.RED + "--------------------------")
+    print(Fore.CYAN + "Channel: " + Fore.WHITE + stream_name)
+    print(Fore.CYAN + "Description: " + Fore.WHITE + channelGet('DESC', channel_name))
+    print(Fore.RED + "--------------------------")
+
+    # We should be playing at this point (probably should check in future...)
+    # Wait for user to press enter, and then stop stream/exit
+    input(Fore.WHITE + "Press Enter to stop Cast...")
+    cast.media_controller.stop()
     exit()
 
 # Execution below this line
@@ -183,8 +254,9 @@ parser = argparse.ArgumentParser(description='Simple Python 3 player for SomaFM,
 parser.add_argument('-l', '--list', action='store_true', help='Download and display list of channels')
 parser.add_argument('-s', '--stats', action='store_true', help='Display current listener stats')
 parser.add_argument('-a', '--about', action='store_true', help='Show information about SomaFM')
-parser.add_argument('-p', '--purge', action='store_true', help='Delete cache files')
+parser.add_argument('-c', '--cast', action='store_true', help='Start playback on Chromecast')
 parser.add_argument('-n', '--notify', action='store_true', help='Enable experimental desktop notifications for this session')
+parser.add_argument('-p', '--purge', action='store_true', help='Delete cache files')
 parser.add_argument("channel", nargs='?', const=1, default=default_chan, help="Channel to stream. Default is Groove Salad")
 args = parser.parse_args()
 
@@ -286,8 +358,17 @@ if desktop_notifications:
         # Otherwise, get icons
         downloadIcons()
 
+# If Chromecast support is enabled, break off here
+if args.cast:
+    if chromecast_support:
+        startCast(args.channel)
+    else:
+        print(Fore.RED + "Chromecast Support Disabled!")
+        print(Fore.WHITE + "Please install the pychromecast library.")
+        exit()
+
 # Find playlist for given channel
-stream_url = channelGet("PLS", args.channel)
+stream_url = channelGet('PLS', args.channel)
 
 # Record the start time
 start_time = datetime.now()
@@ -315,7 +396,7 @@ for line in playstream.stdout:
 
         # Send desktop notification
         if desktop_notifications:
-            subprocess.Popen(['notify-send', '-i', channelGet("ICON", args.channel), attrs.get('StreamTitle', '(none)')])
+            subprocess.Popen(['notify-send', '-i', channelGet('ICON', args.channel), attrs.get('StreamTitle', '(none)')])
 
 # Calculate how long we were playing
 time_elapsed = datetime.now() - start_time

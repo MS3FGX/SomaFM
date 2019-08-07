@@ -1,5 +1,8 @@
 # Version History
 
+### August 6th, 2019
+- Initial Chromecast support
+
 ### August 5th, 2019
 - Fuzzy channel matching
 
