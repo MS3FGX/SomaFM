@@ -64,9 +64,7 @@ channel_file = cache_dir + "/channel_list"
 # Catch ctrl-c
 def signal_handler(sig, frame):
     print(Fore.RED + "Force closing...")
-    # Try this
-    playstream.terminate()
-    # But also this
+    # Kill any sneaky mplayers
     os.system('killall mplayer')
     sys.exit(0)
 
@@ -183,6 +181,14 @@ def channelGet(request, channel_name):
                 return(icon_dir + "/" + os.path.basename(channel[image_size]))
             elif request == "ICON_URL":
                 return(channel[image_size])
+            elif request == "URL":
+                # Download PLS
+                pls_file = requests.get(channel['playlists'][quality_num]['url'])
+
+                # Split out MP3 URL
+                for line in pls_file.text.splitlines():
+                    if "File1" in line:
+                        return(line.split('=')[1])
             else:
                 print(Fore.RED + "Unknown channel operation!")
                 exit()
@@ -192,18 +198,30 @@ def channelGet(request, channel_name):
     print(Fore.WHITE + "Double check the name of the channel and try again.")
     exit()
 
+# Stream channel with media player
+def startStream(channel_name):
+    # Find playlist for given channel
+    stream_url = channelGet('PLS', args.channel)
+
+    # Open stream
+    print("Loading stream...", end='')
+    try:
+        playstream = subprocess.Popen(['mplayer', '-playlist', stream_url], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=False)
+    except:
+        print(Fore.RED + "FAILED")
+        print("")
+        print(Fore.WHITE + "Playback encountered an unknown error.")
+        exit()
+    print("OK")
+
+    # Hand off to info display
+    streamInfo(playstream)
+
 # Stream channel on Chromecast
 def startCast(channel_name):
-    # Download PLS
-    pls_file = requests.get(channelGet('PLS', args.channel))
-
-    # Split out MP3 URL
-    for line in pls_file.text.splitlines():
-        if "File1" in line:
-            stream_url = line.split('=')[1]
-
-    # Get stream name to use elsewhere
+    # Populate stream variables
     stream_name = channelGet('NAME', channel_name)
+    stream_url = channelGet('URL', channel_name)
 
     # Now try to communicate with CC
     print("Connecting to", chromecast_name, end='...')
@@ -217,7 +235,6 @@ def startCast(channel_name):
         print(Fore.WHITE + "Double check the device name and try again.")
         exit()
 
-    # If we get here, device is online
     # Attempt to start stream
     try:
         cast.wait()
@@ -229,20 +246,42 @@ def startCast(channel_name):
         print("")
         print(Fore.WHITE + "Stream failed to start on Chromecast.")
         exit()
+    print("OK")
 
-    print(Fore.GREEN + "OK")
+    # Start mplayer with no audio to get track info
+    try:
+        playstream = subprocess.Popen(['mplayer', '-ao', 'null', stream_url], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=False)
+    except:
+        print(Fore.RED + "Track Sync Failed!")
+        exit()
 
-    # Print stream info
+    # Hand off to info display
+    streamInfo(playstream)
+
+    # If we get here, then mplayer has stopped and so should Cast
+    #cast.media_controller.stop()
+    cast.quit_app()
+
+def streamInfo(playstream):
     print(Fore.RED + "--------------------------")
-    print(Fore.CYAN + "Channel: " + Fore.WHITE + stream_name)
-    print(Fore.CYAN + "Description: " + Fore.WHITE + channelGet('DESC', channel_name))
-    print(Fore.RED + "--------------------------")
+    # Parse output
+    for line in playstream.stdout:
+        if line.startswith(b'Name'):
+            print(Fore.CYAN + "Channel: " + Fore.WHITE + line.decode().split(':', 2)[1].strip())
+        if line.startswith(b'Genre'):
+            print(Fore.CYAN + "Genre: " + Fore.WHITE + line.decode().split(':', 1)[1].strip())
+        if line.startswith(b'Bitrate'):
+            print(Fore.CYAN + "Bitrate: " + Fore.WHITE + line.decode().split(':', 1)[1].strip())
+            print(Fore.RED + "--------------------------")
+        if line.startswith(b'ICY Info:'):
+            info = line.decode().split(':', 1)[1].strip()
+            attrs = dict(re.findall("(\w+)='([^']*)'", info))
+            print(Fore.BLUE + datetime.now().strftime("%H:%M:%S"), end=' | ')
+            print(Fore.GREEN + attrs.get('StreamTitle', '(none)'))
 
-    # We should be playing at this point (probably should check in future...)
-    # Wait for user to press enter, and then stop stream/exit
-    input(Fore.WHITE + "Press Enter to stop Cast...")
-    cast.media_controller.stop()
-    exit()
+            # Send desktop notification
+            if desktop_notifications:
+                subprocess.Popen(['notify-send', '-i', channelGet('ICON', args.channel), attrs.get('StreamTitle', '(none)')])
 
 # Execution below this line
 #-----------------------------------------------------------------------#
@@ -358,6 +397,9 @@ if desktop_notifications:
         # Otherwise, get icons
         downloadIcons()
 
+# Record the start time
+start_time = datetime.now()
+
 # If Chromecast support is enabled, break off here
 if args.cast:
     if chromecast_support:
@@ -366,37 +408,9 @@ if args.cast:
         print(Fore.RED + "Chromecast Support Disabled!")
         print(Fore.WHITE + "Please install the pychromecast library.")
         exit()
-
-# Find playlist for given channel
-stream_url = channelGet('PLS', args.channel)
-
-# Record the start time
-start_time = datetime.now()
-
-# Open stream
-print("Loading stream...", end='')
-playstream = subprocess.Popen(['mplayer', '-playlist', stream_url], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=False)
-print("OK")
-print(Fore.RED + "--------------------------")
-print(Fore.WHITE, end='')
-# Parse output
-for line in playstream.stdout:
-    if line.startswith(b'Name'):
-        print(Fore.CYAN + "Channel: " + Fore.WHITE + line.decode().split(':', 2)[1].strip())
-    if line.startswith(b'Genre'):
-        print(Fore.CYAN + "Genre: " + Fore.WHITE + line.decode().split(':', 1)[1].strip())
-    if line.startswith(b'Bitrate'):
-        print(Fore.CYAN + "Bitrate: " + Fore.WHITE + line.decode().split(':', 1)[1].strip())
-        print(Fore.RED + "--------------------------")
-    if line.startswith(b'ICY Info:'):
-        info = line.decode().split(':', 1)[1].strip()
-        attrs = dict(re.findall("(\w+)='([^']*)'", info))
-        print(Fore.BLUE + datetime.now().strftime("%H:%M:%S"), end=' | ')
-        print(Fore.GREEN + attrs.get('StreamTitle', '(none)'))
-
-        # Send desktop notification
-        if desktop_notifications:
-            subprocess.Popen(['notify-send', '-i', channelGet('ICON', args.channel), attrs.get('StreamTitle', '(none)')])
+else:
+    # Else, start stream
+    startStream(args.channel)
 
 # Calculate how long we were playing
 time_elapsed = datetime.now() - start_time

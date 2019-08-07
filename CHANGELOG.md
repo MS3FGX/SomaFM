@@ -1,5 +1,10 @@
 # Version History
 
+### August 7th, 2019
+- Modularize stream playback
+- Get time elapsed for Chromecast stream
+- Show track info for Chromecast steam in terminal
+
 ### August 6th, 2019
 - Initial Chromecast support
 
