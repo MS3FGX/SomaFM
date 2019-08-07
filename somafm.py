@@ -38,6 +38,9 @@ default_chan = "Groove Salad"
 # Name of Chromecast device
 chromecast_name = "The Office"
 
+# Highlight station IDs in yellow
+station_highlights = True
+
 # Enable/Disable experimental desktop notifications
 desktop_notifications = False
 
@@ -58,6 +61,9 @@ image_size = "xlimage"
 
 # File name for channel cache
 channel_file = cache_dir + "/channel_list"
+
+# Known station IDs
+station_ids = ["SomaFM", "Big Url"]
 
 # Define functions
 #-----------------------------------------------------------------------#
@@ -262,6 +268,7 @@ def startCast(channel_name):
     #cast.media_controller.stop()
     cast.quit_app()
 
+# Print stream and track information
 def streamInfo(playstream):
     print(Fore.RED + "--------------------------")
     # Parse output
@@ -274,14 +281,32 @@ def streamInfo(playstream):
             print(Fore.CYAN + "Bitrate: " + Fore.WHITE + line.decode().split(':', 1)[1].strip())
             print(Fore.RED + "--------------------------")
         if line.startswith(b'ICY Info:'):
+            # Parse info
             info = line.decode().split(':', 1)[1].strip()
             attrs = dict(re.findall("(\w+)='([^']*)'", info))
+            track = attrs.get('StreamTitle', '(none)')
             print(Fore.BLUE + datetime.now().strftime("%H:%M:%S"), end=' | ')
-            print(Fore.GREEN + attrs.get('StreamTitle', '(none)'))
 
-            # Send desktop notification
+            # Highlight station IDs in yellow
+            if station_highlights:
+                stationHighlight(track)
+            else:
+                print(Fore.GREEN + track)
+
+            # Send desktop notification if enabled
             if desktop_notifications:
                 subprocess.Popen(['notify-send', '-i', channelGet('ICON', args.channel), attrs.get('StreamTitle', '(none)')])
+
+# Highlight known station IDs
+def stationHighlight(track):
+    # Loop through known IDs, return on match
+    for station in station_ids:
+        if station.capitalize() in track.capitalize():
+            print(Fore.YELLOW + track)
+            return()
+
+    # If we get here, no match was found
+    print(Fore.GREEN + track)
 
 # Execution below this line
 #-----------------------------------------------------------------------#
