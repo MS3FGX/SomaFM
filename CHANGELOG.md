@@ -1,7 +1,13 @@
 # Version History
 
+### August 8th, 2019 (DEF CON 27 Release)
+- Update README
+- Bump version to 1.5
+- Fix for duplicate stream info display
+
 ### August 7th, 2019
 - Modularize stream playback
+- Highlight known Station IDs (optional)
 - Get time elapsed for Chromecast stream
 - Show track info for Chromecast steam in terminal
 
