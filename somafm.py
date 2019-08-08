@@ -270,16 +270,21 @@ def startCast(channel_name):
 
 # Print stream and track information
 def streamInfo(playstream):
+    InfoPrinted = False
     print(Fore.RED + "--------------------------")
     # Parse output
     for line in playstream.stdout:
-        if line.startswith(b'Name'):
-            print(Fore.CYAN + "Channel: " + Fore.WHITE + line.decode().split(':', 2)[1].strip())
-        if line.startswith(b'Genre'):
-            print(Fore.CYAN + "Genre: " + Fore.WHITE + line.decode().split(':', 1)[1].strip())
-        if line.startswith(b'Bitrate'):
-            print(Fore.CYAN + "Bitrate: " + Fore.WHITE + line.decode().split(':', 1)[1].strip())
-            print(Fore.RED + "--------------------------")
+        if InfoPrinted is False:
+            if line.startswith(b'Name'):
+                print(Fore.CYAN + "Channel: " + Fore.WHITE + line.decode().split(':', 2)[1].strip())
+            if line.startswith(b'Genre'):
+                print(Fore.CYAN + "Genre: " + Fore.WHITE + line.decode().split(':', 1)[1].strip())
+            if line.startswith(b'Bitrate'):
+                print(Fore.CYAN + "Bitrate: " + Fore.WHITE + line.decode().split(':', 1)[1].strip())
+                print(Fore.RED + "--------------------------")
+                InfoPrinted = True
+
+        # Updates on every new track
         if line.startswith(b'ICY Info:'):
             # Parse info
             info = line.decode().split(':', 1)[1].strip()
