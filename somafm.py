@@ -286,10 +286,12 @@ def streamInfo(playstream):
 
         # Updates on every new track
         if line.startswith(b'ICY Info:'):
-            # Parse info
+            # Break out artist - track data
             info = line.decode().split(':', 1)[1].strip()
-            attrs = dict(re.findall("(\w+)='([^']*)'", info))
-            track = attrs.get('StreamTitle', '(none)')
+            match = re.search(r"StreamTitle='(.*)';StreamUrl=", info)
+            track = match.group(1)
+
+            # Print date before track
             print(Fore.BLUE + datetime.now().strftime("%H:%M:%S"), end=' | ')
 
             # Highlight station IDs in yellow

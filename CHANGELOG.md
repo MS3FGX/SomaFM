@@ -1,5 +1,8 @@
 # Version History
 
+### December 3rd, 2019
+- Fix for track titles with apostrophes 
+
 ### August 8th, 2019 (DEF CON 27 Release)
 - Update README
 - Bump version to 1.5
