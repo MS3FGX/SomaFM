@@ -6,6 +6,14 @@ As of the current version, the player supports completely unnecessary features l
 
 For an up-to-date list of what's new, check the [Changelog](CHANGELOG.md)
 
+## Installation
+
+As of version 1.5, this program is available on PyPi and can be installed with the following command:
+
+```console
+pip3 install somafm
+```
+
 ## Dependencies
 This interface is written for Python 3.x, and playback is done with [MPlayer](http://www.mplayerhq.hu/design7/news.html). You'll also need to have the following libraries installed:
 
@@ -16,13 +24,13 @@ This interface is written for Python 3.x, and playback is done with [MPlayer](ht
 Simply running `somafm.py` with no options will start streaming "Groove Salad." In the somewhat unlikely event you wanted to listen to something else, simply give it the channel name like so:
 
 ```console
-./somafm.py "DEF CON Radio"
+./somafm "DEF CON Radio"
 ```
 
 Channel entry is not case sensitive and uses a certain amount of "fuzzy" matching. So rather than typing out the entire name, the following will also work:
 
 ```console
-./somafm.py def
+./somafm def
 ```
 In addition, the following options are available:
 
@@ -34,7 +42,7 @@ Download the latest master list of SomaFM channels and display their description
 #### --stats
 This option shows the number of listeners for each currently online SomaFM channel, along with a total listener count.
 
-### --cast
+#### --cast
 If you have the [pychromecast](https://github.com/balloob/pychromecast) library installed, this option will start playback of the given SomaFM channel on the Chromecast device specified by the `chromecast_name` variable.
 
 ## Desktop Notifications
