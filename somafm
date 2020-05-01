@@ -39,7 +39,7 @@ default_chan = "Groove Salad"
 chromecast_name = "The Office"
 
 # Show track names in terminal while casting
-chromecast_sync = True
+cast_sync = True
 
 # Highlight station IDs in yellow
 station_highlights = True
@@ -283,29 +283,37 @@ def startCast(channel_name):
         exit()
     print("OK")
 
-    # Start player with no audio to get track info
-    if shutil.which(mplayer_bin):
-        player_binary = mplayer_bin
-        player_arg1 = '-ao'
-        player_arg2 = 'null'
-    elif shutil.which(mpg_bin):
-        player_binary = mpg_bin
-        player_arg1 = '-a'
-        player_arg2 = 'null'
-        stream_url = '-@'+channelGet('MP3', args.channel)
+    if cast_sync:
+        # Start player with no audio to get track info
+        if shutil.which(mplayer_bin):
+            player_binary = mplayer_bin
+            player_arg1 = '-ao'
+            player_arg2 = 'null'
+        elif shutil.which(mpg_bin):
+            player_binary = mpg_bin
+            player_arg1 = '-a'
+            player_arg2 = 'null'
+            stream_url = '-@'+channelGet('MP3', args.channel)
+        elif shutil.which(mpv_bin):
+            # mpv chokes on playing without audio, will investigate
+            print(Fore.RED + "Cast sync not supported on mpv.")
+            exit()
 
-    try:
-        playstream = subprocess.Popen([player_binary, player_arg1, player_arg2, stream_url], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=False)
-    except:
-        print(Fore.RED + "Track Sync Failed!")
+        try:
+            playstream = subprocess.Popen([player_binary, player_arg1, player_arg2, stream_url], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=False)
+        except:
+            print(Fore.RED + "Track Sync Failed!")
+            exit()
+
+        # Hand off to info display
+        streamInfo(playstream)
+
+        # If we get here, then player has stopped and so should Cast
+        cast.quit_app()
+    else:
+        print(Fore.RED + "--------------------------")
+        print(Fore.WHITE + "Now playing: " + Fore.CYAN + stream_name)
         exit()
-
-    # Hand off to info display
-    streamInfo(playstream)
-
-    # If we get here, then mplayer has stopped and so should Cast
-    #cast.media_controller.stop()
-    cast.quit_app()
 
 # Print stream and track information
 def streamInfo(playstream):
