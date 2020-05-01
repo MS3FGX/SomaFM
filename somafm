@@ -376,7 +376,7 @@ def streamInfo(playstream):
 
             # Send desktop notification if enabled
             if desktop_notifications:
-                subprocess.Popen(['notify-send', '-i', channelGet('ICON', args.channel), attrs.get('StreamTitle', '(none)')])
+                subprocess.Popen(['notify-send', '-i', channelGet('ICON', args.channel), track])
 
 # Highlight known station IDs
 def stationHighlight(track):
