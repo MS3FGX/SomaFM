@@ -44,6 +44,9 @@ station_highlights = True
 # Enable/Disable experimental desktop notifications
 desktop_notifications = False
 
+# Show which player is being used in header
+show_player = True
+
 # Following variables should probably be left alone
 #-----------------------------------------------------------------------
 
@@ -66,8 +69,9 @@ channel_file = cache_dir + "/channel_list"
 station_ids = ["SomaFM", "Big Url"]
 
 # Player binary names
-mplayer_bin = 'mplayder'
+mplayer_bin = 'mplayer'
 mpg_bin = 'mpg123'
+mpv_bin = 'mpv'
 
 # Define functions
 #-----------------------------------------------------------------------#
@@ -226,6 +230,10 @@ def startStream(channel_name):
         player_binary = mpg_bin
         player_argument = '-@'
         stream_url = channelGet('MP3', args.channel)
+    elif shutil.which(mpv_bin):
+        player_binary = mpv_bin
+        player_argument = ''
+        stream_url = channelGet('PLS', args.channel)
 
     # Open stream
     print("Loading stream...", end='')
@@ -303,15 +311,30 @@ def streamInfo(playstream):
     # Parse output
     for line in playstream.stdout:
         if InfoPrinted is False:
+            # mpv
+            if line.startswith(b'File tags:'):
+                if show_player:
+                    print(Fore.CYAN + "Player: " + Fore.WHITE + "mpv")
+                # mpv doesn't give us much info, so have to pull channel name from args
+                print(Fore.CYAN + "Channel: " + Fore.WHITE + channelGet('NAME', args.channel))
+                print(Fore.RED + "--------------------------")
+                print(Fore.WHITE + "Press Crtl+C to Quit")
+                InfoPrinted = True
+
             # mpg123
             if line.startswith(b'ICY-NAME'):
+                if show_player:
+                    print(Fore.CYAN + "Player: " + Fore.WHITE + "mpg123")
                 print(Fore.CYAN + "Channel: " + Fore.WHITE + line.decode().split(':', 2)[1].strip())
             if line.startswith(b'MPEG'):
                 print(Fore.CYAN + "Bitrate: " + Fore.WHITE + line.decode().strip())
                 print(Fore.RED + "--------------------------")
+                InfoPrinted = True
 
             # Mplayer
             if line.startswith(b'Name'):
+                if show_player:
+                    print(Fore.CYAN + "Player: " + Fore.WHITE + "MPlayer")
                 print(Fore.CYAN + "Channel: " + Fore.WHITE + line.decode().split(':', 2)[1].strip())
             if line.startswith(b'Genre'):
                 print(Fore.CYAN + "Genre: " + Fore.WHITE + line.decode().split(':', 1)[1].strip())
@@ -321,11 +344,15 @@ def streamInfo(playstream):
                 InfoPrinted = True
 
         # Updates on every new track
-        if line.startswith(b'ICY Info:') or line.startswith(b'ICY-META:'):
-            # Break out artist - track data
-            info = line.decode().split(':', 1)[1].strip()
-            match = re.search(r"StreamTitle='(.*)';StreamUrl=", info)
-            track = match.group(1)
+        if line.startswith(b'ICY Info:') or line.startswith(b'ICY-META:') or line.startswith(b' icy-title:'):
+            # mpv format is different
+            if line.startswith(b' icy-title:'):
+                track = line.decode().split(':', 1)[1].strip()
+            else:
+                # Break out artist - track data
+                info = line.decode().split(':', 1)[1].strip()
+                match = re.search(r"StreamTitle='(.*)';StreamUrl=", info)
+                track = match.group(1)
 
             # Print date before track
             print(Fore.BLUE + datetime.now().strftime("%H:%M:%S"), end=' | ')
@@ -440,10 +467,10 @@ if args.stats:
     exit()
 
 # If we get here, we are playing
-# Check for MPlayer before we get too comfortable
-if shutil.which(mplayer_bin) == None and shutil.which(mpg_bin) == None:
+# Check for player binaries before we get too comfortable
+if shutil.which(mplayer_bin) == None and shutil.which(mpg_bin) == None and shutil.which(mpv_bin) == None:
     print(Fore.RED + "No supported player found!")
-    print(Fore.WHITE + "MPlayer or mpg123 is required for this script to function.")
+    print(Fore.WHITE + "MPlayer, mpv, or mpg123 must be installed for this script to function.")
     exit()
 
 # See if we already have a channel list
