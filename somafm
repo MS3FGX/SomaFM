@@ -38,6 +38,9 @@ default_chan = "Groove Salad"
 # Name of Chromecast device
 chromecast_name = "The Office"
 
+# Show track names in terminal while casting
+chromecast_sync = True
+
 # Highlight station IDs in yellow
 station_highlights = True
 
@@ -45,7 +48,7 @@ station_highlights = True
 desktop_notifications = False
 
 # Show which player is being used in header
-show_player = True
+show_player = False
 
 # Following variables should probably be left alone
 #-----------------------------------------------------------------------
@@ -390,16 +393,21 @@ parser.add_argument('-s', '--stats', action='store_true', help='Display current 
 parser.add_argument('-a', '--about', action='store_true', help='Show information about SomaFM')
 parser.add_argument('-c', '--cast', action='store_true', help='Start playback on Chromecast')
 parser.add_argument('-n', '--notify', action='store_true', help='Enable experimental desktop notifications for this session')
-parser.add_argument('-p', '--purge', action='store_true', help='Delete cache files')
+parser.add_argument('-p', '--player', action='store_true', help='Show which player is being used for this session')
+parser.add_argument('-d', '--delete', action='store_true', help='Delete cache files')
 parser.add_argument("channel", nargs='?', const=1, default=default_chan, help="Channel to stream. Default is Groove Salad")
 args = parser.parse_args()
 
 # Enable desktop notifications
+if args.player:
+    show_player = True
+
+# Enable player display
 if args.notify:
     desktop_notifications = True
 
 # Delete cache directory, exit
-if args.purge:
+if args.delete:
     try:
         shutil.rmtree(cache_dir)
     except:
