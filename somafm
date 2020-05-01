@@ -65,13 +65,18 @@ channel_file = cache_dir + "/channel_list"
 # Known station IDs
 station_ids = ["SomaFM", "Big Url"]
 
+# Player binary names
+mplayer_bin = 'mplayder'
+mpg_bin = 'mpg123'
+
 # Define functions
 #-----------------------------------------------------------------------#
 # Catch ctrl-c
 def signal_handler(sig, frame):
     print(Fore.RED + "Force closing...")
-    # Kill any sneaky mplayers
-    os.system('killall mplayer')
+    # Kill any sneaky players
+    os.system('killall -q mplayefr')
+    os.system('killall -q mpg123')
     sys.exit(0)
 
 # Download master list of channels
@@ -191,10 +196,16 @@ def channelGet(request, channel_name):
                 # Download PLS
                 pls_file = requests.get(channel['playlists'][quality_num]['url'])
 
-                # Split out MP3 URL
+                # Split out file URL
                 for line in pls_file.text.splitlines():
                     if "File1" in line:
                         return(line.split('=')[1])
+            elif request == "MP3":
+                # For mpg123 compatibility, return HTTP MP3 stream
+                # This may break in the future if Soma goes all HTTPS
+                for stream in channel['playlists']:
+                        if stream['format'] == 'mp3':
+                            return(stream['url'].replace('https', 'http'))
             else:
                 print(Fore.RED + "Unknown channel operation!")
                 exit()
@@ -206,13 +217,20 @@ def channelGet(request, channel_name):
 
 # Stream channel with media player
 def startStream(channel_name):
-    # Find playlist for given channel
-    stream_url = channelGet('PLS', args.channel)
+    # Change things around depending on player used
+    if shutil.which(mplayer_bin):
+        player_binary = mplayer_bin
+        player_argument = '-playlist'
+        stream_url = channelGet('PLS', args.channel)
+    elif shutil.which(mpg_bin):
+        player_binary = mpg_bin
+        player_argument = '-@'
+        stream_url = channelGet('MP3', args.channel)
 
     # Open stream
     print("Loading stream...", end='')
     try:
-        playstream = subprocess.Popen(['mplayer', '-playlist', stream_url], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=False)
+        playstream = subprocess.Popen([player_binary, player_argument, stream_url], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=False)
     except:
         print(Fore.RED + "FAILED")
         print("")
@@ -254,9 +272,19 @@ def startCast(channel_name):
         exit()
     print("OK")
 
-    # Start mplayer with no audio to get track info
+    # Start player with no audio to get track info
+    if shutil.which(mplayer_bin):
+        player_binary = mplayer_bin
+        player_arg1 = '-ao'
+        player_arg2 = 'null'
+    elif shutil.which(mpg_bin):
+        player_binary = mpg_bin
+        player_arg1 = '-a'
+        player_arg2 = 'null'
+        stream_url = '-@'+channelGet('MP3', args.channel)
+
     try:
-        playstream = subprocess.Popen(['mplayer', '-ao', 'null', stream_url], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=False)
+        playstream = subprocess.Popen([player_binary, player_arg1, player_arg2, stream_url], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=False)
     except:
         print(Fore.RED + "Track Sync Failed!")
         exit()
@@ -275,6 +303,14 @@ def streamInfo(playstream):
     # Parse output
     for line in playstream.stdout:
         if InfoPrinted is False:
+            # mpg123
+            if line.startswith(b'ICY-NAME'):
+                print(Fore.CYAN + "Channel: " + Fore.WHITE + line.decode().split(':', 2)[1].strip())
+            if line.startswith(b'MPEG'):
+                print(Fore.CYAN + "Bitrate: " + Fore.WHITE + line.decode().strip())
+                print(Fore.RED + "--------------------------")
+
+            # Mplayer
             if line.startswith(b'Name'):
                 print(Fore.CYAN + "Channel: " + Fore.WHITE + line.decode().split(':', 2)[1].strip())
             if line.startswith(b'Genre'):
@@ -285,7 +321,7 @@ def streamInfo(playstream):
                 InfoPrinted = True
 
         # Updates on every new track
-        if line.startswith(b'ICY Info:'):
+        if line.startswith(b'ICY Info:') or line.startswith(b'ICY-META:'):
             # Break out artist - track data
             info = line.decode().split(':', 1)[1].strip()
             match = re.search(r"StreamTitle='(.*)';StreamUrl=", info)
@@ -405,9 +441,9 @@ if args.stats:
 
 # If we get here, we are playing
 # Check for MPlayer before we get too comfortable
-if shutil.which("mplayer") == None:
-    print(Fore.RED + "MPlayer not found!")
-    print(Fore.WHITE + "MPlayer is required for this script to function.")
+if shutil.which(mplayer_bin) == None and shutil.which(mpg_bin) == None:
+    print(Fore.RED + "No supported player found!")
+    print(Fore.WHITE + "MPlayer or mpg123 is required for this script to function.")
     exit()
 
 # See if we already have a channel list
