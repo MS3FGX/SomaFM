@@ -315,6 +315,16 @@ def startCast(channel_name):
         print(Fore.WHITE + "Now playing: " + Fore.CYAN + stream_name)
         exit()
 
+# Determine if track is a Station ID
+def stationID(track):
+    # Loop through known IDs, return on match
+    for station in station_ids:
+        if station.capitalize() in track.capitalize():
+            return(True)
+
+    # If we get here, no match was found
+    return(False)
+
 # Print stream and track information
 def streamInfo(playstream):
     InfoPrinted = False
@@ -368,26 +378,18 @@ def streamInfo(playstream):
             # Print date before track
             print(Fore.BLUE + datetime.now().strftime("%H:%M:%S"), end=' | ')
 
+            # Check if track is a station ID once, but use value twice
+            IDStatus = stationID(track)
+
             # Highlight station IDs in yellow
-            if station_highlights:
-                stationHighlight(track)
+            if station_highlights and IDStatus:
+                print(Fore.YELLOW + track)
             else:
                 print(Fore.GREEN + track)
 
-            # Send desktop notification if enabled
-            if desktop_notifications:
+            # Send desktop notification if enabled and track not a station ID
+            if desktop_notifications and not IDStatus:
                 subprocess.Popen(['notify-send', '-i', channelGet('ICON', args.channel), track])
-
-# Highlight known station IDs
-def stationHighlight(track):
-    # Loop through known IDs, return on match
-    for station in station_ids:
-        if station.capitalize() in track.capitalize():
-            print(Fore.YELLOW + track)
-            return()
-
-    # If we get here, no match was found
-    print(Fore.GREEN + track)
 
 # Execution below this line
 #-----------------------------------------------------------------------#
