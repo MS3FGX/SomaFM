@@ -71,10 +71,8 @@ channel_file = cache_dir + "/channel_list"
 # Known station IDs
 station_ids = ["SomaFM", "Big Url"]
 
-# Player binary names
-mplayer_bin = 'mplayer'
-mpg_bin = 'mpg123'
-mpv_bin = 'mpv'
+# Supported players
+players = ['mplayer','mpg123','mpv']
 
 # Define functions
 #-----------------------------------------------------------------------#
@@ -82,9 +80,50 @@ mpv_bin = 'mpv'
 def signal_handler(sig, frame):
     print(Fore.RED + "Force closing...")
     # Kill any sneaky players
-    os.system('killall -q mplayefr')
-    os.system('killall -q mpg123')
+    for player_name in players:
+        subprocess.call(['killall', '-q', player_name])
     sys.exit(0)
+
+# Check for supported players and config variables
+def configPlayer():
+    # Make player definition global, init name
+    global player
+    player = {'name': ''}
+    # Loop through list of players
+    for player_name in players:
+        # Match found
+        if shutil.which(player_name):
+            if player_name == 'mplayer':
+                player = {
+                    'name': 'mplayer',
+                    'arg': '-playlist',
+                    'sarg1': '-ao',
+                    'sarg2': 'null',
+                    'stream': 'PLS'
+                    }
+                break
+            elif player_name == 'mpg123':
+                player = {
+                    'name': 'mpg123',
+                    'arg': '-@',
+                    'sarg1': '-a',
+                    'sarg2': 'null',
+                    'stream': 'MP3'
+                    }
+                break
+            elif player_name == 'mpv':
+                player = {
+                    'name': 'mpv',
+                    'arg': '',
+                    'stream': 'PLS'
+                    }
+                break
+
+    # If dict hasn't been populated, then no player was found
+    if not player['name']:
+        print(Fore.RED + "No supported player found!")
+        print(Fore.WHITE + "Please check documentation for a list of supported players.")
+        exit()
 
 # Download master list of channels
 def downloadChannels():
@@ -224,24 +263,11 @@ def channelGet(request, channel_name):
 
 # Stream channel with media player
 def startStream(channel_name):
-    # Change things around depending on player used
-    if shutil.which(mplayer_bin):
-        player_binary = mplayer_bin
-        player_argument = '-playlist'
-        stream_url = channelGet('PLS', args.channel)
-    elif shutil.which(mpg_bin):
-        player_binary = mpg_bin
-        player_argument = '-@'
-        stream_url = channelGet('MP3', args.channel)
-    elif shutil.which(mpv_bin):
-        player_binary = mpv_bin
-        player_argument = ''
-        stream_url = channelGet('PLS', args.channel)
-
     # Open stream
     print("Loading stream...", end='')
     try:
-        playstream = subprocess.Popen([player_binary, player_argument, stream_url], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=False)
+        playstream = subprocess.Popen([player['name'], player['arg'], channelGet(player['stream'],
+                     args.channel)], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=False)
     except:
         print(Fore.RED + "FAILED")
         print("")
@@ -283,24 +309,20 @@ def startCast(channel_name):
         exit()
     print("OK")
 
+    # Start player with no audio to get track info
     if cast_sync:
-        # Start player with no audio to get track info
-        if shutil.which(mplayer_bin):
-            player_binary = mplayer_bin
-            player_arg1 = '-ao'
-            player_arg2 = 'null'
-        elif shutil.which(mpg_bin):
-            player_binary = mpg_bin
-            player_arg1 = '-a'
-            player_arg2 = 'null'
+        # Some player specific tweaks
+        if player['name'] == 'mpg123':
+            # mpg123 needs @ added to stream name
             stream_url = '-@'+channelGet('MP3', args.channel)
-        elif shutil.which(mpv_bin):
-            # mpv chokes on playing without audio, will investigate
+        elif player['name'] == 'mpv':
+            # Playing without audio doesn't seem to work in mpv, so bail out for now
             print(Fore.RED + "Cast sync not supported on mpv.")
             exit()
 
         try:
-            playstream = subprocess.Popen([player_binary, player_arg1, player_arg2, stream_url], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=False)
+            playstream = subprocess.Popen([player['name'], player['sarg1'], player['sarg2'], stream_url],
+                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=False)
         except:
             print(Fore.RED + "Track Sync Failed!")
             exit()
@@ -486,10 +508,7 @@ if args.stats:
 
 # If we get here, we are playing
 # Check for player binaries before we get too comfortable
-if shutil.which(mplayer_bin) == None and shutil.which(mpg_bin) == None and shutil.which(mpv_bin) == None:
-    print(Fore.RED + "No supported player found!")
-    print(Fore.WHITE + "MPlayer, mpv, or mpg123 must be installed for this script to function.")
-    exit()
+configPlayer()
 
 # See if we already have a channel list
 if os.path.isfile(channel_file) == False:
