@@ -50,6 +50,15 @@ desktop_notifications = False
 # Show which player is being used in header
 show_player = False
 
+# Experimental Options:
+#-----------------------------------------------------------------------
+
+# Run a custom command on each new track (BE CAREFUL)
+custom_notifications = False
+
+# Custom notification command, track title will be given as argument
+notification_cmd = ''
+
 # Following variables should probably be left alone
 #-----------------------------------------------------------------------
 
@@ -400,7 +409,7 @@ def streamInfo(playstream):
             # Print date before track
             print(Fore.BLUE + datetime.now().strftime("%H:%M:%S"), end=' | ')
 
-            # Check if track is a station ID once, but use value twice
+            # Check if track is a station ID once, save value to variable
             IDStatus = stationID(track)
 
             # Highlight station IDs in yellow
@@ -412,6 +421,10 @@ def streamInfo(playstream):
             # Send desktop notification if enabled and track not a station ID
             if desktop_notifications and not IDStatus:
                 subprocess.Popen(['notify-send', '-i', channelGet('ICON', args.channel), track])
+
+            # Run custom notification command if enabled and track is not station ID
+            if custom_notifications and not IDStatus:
+                subprocess.run([notification_cmd, track], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=False)
 
 # Execution below this line
 #-----------------------------------------------------------------------#
