@@ -1,7 +1,29 @@
 # Version History
 
+### May 17th, 2020
+- Update README
+- Update PyPi README
+- Release as v1.6
+
+### May 7th, 2020
+- Modular approach to supporting alternate players
+- Experimental support for custom notification commands
+
+### May 3rd, 2020
+- Don't show desktop notifications for station IDs
+
+### May 1st, 2020
+- Fix notifications
+- Initial support for mpv
+- Add optional player name display
+- Chromecast track sync now optional
+
+### April 30th, 2020
+- Initial support for mpg123
+- Restructuring for PyPi upload
+
 ### December 3rd, 2019
-- Fix for track titles with apostrophes 
+- Fix for track titles with apostrophes
 
 ### August 8th, 2019 (DEF CON 27 Release)
 - Update README

@@ -7,21 +7,20 @@ As of the current version, the player supports completely unnecessary features l
 For an up-to-date list of what's new, check the [Changelog](CHANGELOG.md)
 
 ## Installation
-
-As of version 1.5, this program is available on PyPi and can be installed with the following command:
+Starting with version 1.5, this stable version of this program is available on PyPi and can be installed with the following command:
 
 ```console
 pip3 install somafm
 ```
 
 ## Dependencies
-This interface is written for Python 3.x, and playback is done with [MPlayer](http://www.mplayerhq.hu/design7/news.html). You'll also need to have the following libraries installed:
+Using this program requires the Python 3 versions of the following libraries:
 
 * [colorama](https://pypi.org/project/colorama/)
 * [requests](https://3.python-requests.org/)
 
 ## Usage
-Simply running `somafm.py` with no options will start streaming "Groove Salad." In the somewhat unlikely event you wanted to listen to something else, simply give it the channel name like so:
+Simply running `somafm` with no options will start streaming "Groove Salad." In the somewhat unlikely event you wanted to listen to something else, simply give it the channel name like so:
 
 ```console
 ./somafm "DEF CON Radio"
@@ -45,6 +44,12 @@ This option shows the number of listeners for each currently online SomaFM chann
 #### --cast
 If you have the [pychromecast](https://github.com/balloob/pychromecast) library installed, this option will start playback of the given SomaFM channel on the Chromecast device specified by the `chromecast_name` variable.
 
+## Supported Players
+This program is simply a front-end, playback requires one of these media players to be installed:
+* [MPlayer](http://www.mplayerhq.hu/design7/news.html) (Best choice)
+* [mpg123](https://www.mpg123.de/) (Lightweight, but lacks AAC support)
+* [mpv](https://mpv.io/) (Slow to start stream, minimal functionality)
+
 ## Desktop Notifications
 There is currently experimental support for desktop notifications on Linux using libnotify. They can be enabled by changing the value of the boolean variable `desktop_notifications` or turned on temporarily with the `-n` option.
 
@@ -54,8 +59,8 @@ There is currently experimental support for desktop notifications on Linux using
 While the script is already at a point where I would consider it feature complete, there are a few things I think might be interesting to look into:
 
 * Random channel selection
-* Support other players (mpv/VLC)
 * Display keyboard controls during playback
+* ~~Support other players (mpv/VLC)~~
 * ~~Filter station IDs from track listing~~
 * ~~Desktop notifications on new track~~
 

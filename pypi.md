@@ -5,10 +5,16 @@ As of the current version, the player supports completely unnecessary features l
 For an up-to-date list of what's new, check the [Changelog](CHANGELOG.md)
 
 ## Dependencies
-This interface is written for Python 3.x, and playback is done with [MPlayer](http://www.mplayerhq.hu/design7/news.html). You'll also need to have the following libraries installed:
+Using this program requires the Python 3 versions of the following libraries:
 
 * [colorama](https://pypi.org/project/colorama/)
 * [requests](https://3.python-requests.org/)
+
+## Supported Players
+This program is simply a front-end, playback requires one of these media players to be installed:
+* [MPlayer](http://www.mplayerhq.hu/design7/news.html) (Best choice)
+* [mpg123](https://www.mpg123.de/) (Lightweight, but lacks AAC support)
+* [mpv](https://mpv.io/) (Slow to start stream, minimal functionality)
 
 ## About SomaFM
 ![somabanner](http://somafm.com/linktous/728x90sfm.jpg)
