@@ -84,6 +84,9 @@ image_size = "xlimage"
 # File name for channel cache
 channel_file = cache_dir + "/channel_list"
 
+# PID file
+pid_file = "/tmp/soma.pid"
+
 # Known station IDs
 station_ids = ["SomaFM", "Big Url"]
 
@@ -98,6 +101,8 @@ def signal_handler(sig, frame):
     # Kill any sneaky players
     for player_name in players:
         subprocess.call(['killall', '-q', player_name])
+    # Delete PID file
+    os.unlink(pid_file)
     sys.exit(0)
 
 # Check for supported players and config variables
@@ -466,6 +471,17 @@ parser.add_argument('-d', '--delete', action='store_true', help='Delete cache fi
 parser.add_argument("channel", nargs='?', const=1, default=default_chan, help="Channel to stream. Default is Groove Salad")
 args = parser.parse_args()
 
+# Check for existing PID file
+if os.path.isfile(pid_file):
+    # There can be only one
+    print("SomaFM is already running!")
+    print("If you think this message is a mistake, delete the file: " + pid_file)
+    sys.exit()
+
+# If we get here, create one
+with open(pid_file, 'w') as pidfile:
+    pidfile.write(str(os.getpid()))
+
 # Enable log file
 if args.file:
     log_tracks = True
@@ -599,4 +615,8 @@ if log_tracks:
 
 # Print exit message
 print(Fore.RESET + "Playback stopped after {:02}:{:02}:{:02}".format(int(hours), int(minutes), int(seconds)))
+
+# Delete PID file
+os.unlink(pid_file)
+
 # EOF
