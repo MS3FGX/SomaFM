@@ -58,7 +58,13 @@ show_player = False
 custom_notifications = False
 
 # Custom notification command, track title will be given as argument
-notification_cmd = ''
+notification_cmd = ""
+
+# Log tracks to file
+log_tracks = False
+
+# File to store track listing
+track_file = "/tmp/somafm_tracks.txt"
 
 # Following variables should probably be left alone
 #-----------------------------------------------------------------------
@@ -427,13 +433,19 @@ def streamInfo(playstream):
             else:
                 print(Fore.GREEN + track)
 
-            # Send desktop notification if enabled and track not a station ID
-            if desktop_notifications and not IDStatus:
-                subprocess.Popen(['notify-send', '-i', channelGet('ICON', args.channel), track])
+            # Before doing anything further, make sure it's not a Station ID
+            if not IDStatus:
+                # Log track to file if enabled
+                if log_tracks:
+                    track_log.write(track + "\n")
 
-            # Run custom notification command if enabled and track is not station ID
-            if custom_notifications and not IDStatus:
-                subprocess.run([notification_cmd, track], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=False)
+                # Send desktop notification if enabled
+                if desktop_notifications:
+                    subprocess.Popen(['notify-send', '-i', channelGet('ICON', args.channel), track])
+
+                # Run custom notification command if enabled
+                if custom_notifications:
+                    subprocess.run([notification_cmd, track], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=False)
 
 # Execution below this line
 #-----------------------------------------------------------------------#
@@ -446,12 +458,17 @@ parser.add_argument('-l', '--list', action='store_true', help='Download and disp
 parser.add_argument('-s', '--stats', action='store_true', help='Display current listener stats')
 parser.add_argument('-a', '--about', action='store_true', help='Show information about SomaFM')
 parser.add_argument('-c', '--cast', action='store_true', help='Start playback on Chromecast')
+parser.add_argument('-f', '--file', action='store_true', help='Enable experimental track logging for this session')
 parser.add_argument('-n', '--notify', action='store_true', help='Enable experimental desktop notifications for this session')
 parser.add_argument('-p', '--player', action='store_true', help='Show which player is being used for this session')
 parser.add_argument('-v', '--verbose', action='store_true', help='For debug use, prints all output of media player.')
 parser.add_argument('-d', '--delete', action='store_true', help='Delete cache files')
 parser.add_argument("channel", nargs='?', const=1, default=default_chan, help="Channel to stream. Default is Groove Salad")
 args = parser.parse_args()
+
+# Enable log file
+if args.file:
+    log_tracks = True
 
 # Enable desktop notifications
 if args.player:
@@ -541,6 +558,10 @@ if os.path.isfile(channel_file) == False:
 with open (channel_file, 'rb') as fp:
     channel_list = pickle.load(fp)
 
+# Open file for track logging (enable line buffering)
+if log_tracks:
+    track_log = open(track_file, 'a', 1)
+
 # Sanity check for desktop notifications
 if desktop_notifications:
     # See if we have notify-send
@@ -571,6 +592,10 @@ else:
 time_elapsed = datetime.now() - start_time
 hours, remainder = divmod(int(time_elapsed.total_seconds()), 3600)
 minutes, seconds = divmod(remainder, 60)
+
+# Close log file
+if log_tracks:
+    track_log.close()
 
 # Print exit message
 print(Fore.RESET + "Playback stopped after {:02}:{:02}:{:02}".format(int(hours), int(minutes), int(seconds)))
