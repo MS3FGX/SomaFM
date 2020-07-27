@@ -2,7 +2,7 @@
 # Python SomaFM Player
 This simple player for [SomaFM](https://somafm.com/) keeps the distractions, and system resource utilization, to an absolute minimum. The look of this player was inspired equally by the excellent SomaFM terminal interfaces which were already available, and the 90's hacker aesthetic that I seem to find myself nostalgic for when listening to a Shoutcast stream at 2AM.
 
-As of the current version, the player supports completely unnecessary features like desktop notifications and Chromecast support at no extra charge.
+As of the current version, the player supports completely unnecessary features like desktop notifications and Chromecast support at no extra charge. Known to work on Linux (including Raspberry Pi and Chrome OS's Crostini) and Mac OS.
 
 For an up-to-date list of what's new, check the [Changelog](CHANGELOG.md)
 
@@ -10,11 +10,11 @@ For an up-to-date list of what's new, check the [Changelog](CHANGELOG.md)
 Starting with version 1.5, this stable version of this program is available on PyPi and can be installed with the following command:
 
 ```console
-pip3 install somafm
+pip install somafm
 ```
 
 ## Dependencies
-Using this program requires the Python 3 versions of the following libraries:
+At minimum, this program requires Python 3 versions of the following libraries:
 
 * [colorama](https://pypi.org/project/colorama/)
 * [requests](https://3.python-requests.org/)
@@ -23,13 +23,13 @@ Using this program requires the Python 3 versions of the following libraries:
 Simply running `somafm` with no options will start streaming "Groove Salad." In the somewhat unlikely event you wanted to listen to something else, simply give it the channel name like so:
 
 ```console
-./somafm "DEF CON Radio"
+somafm "DEF CON Radio"
 ```
 
 Channel entry is not case sensitive and uses a certain amount of "fuzzy" matching. So rather than typing out the entire name, the following will also work:
 
 ```console
-./somafm def
+somafm def
 ```
 In addition, the following options are available:
 
@@ -65,8 +65,6 @@ While the script is already at a point where I would consider it feature complet
 * ~~Desktop notifications on new track~~
 
 If you have an idea for a feature you'd like to see, let me know.
-
-In addition, the only testing done so far has been on Linux. Presumably it can work on other operating systems with some tweaks, so if you've got a PR to make it work on your OS of choice, I'd be happy to take a look at it.
 
 ## About SomaFM
 ![somabanner](http://somafm.com/linktous/728x90sfm.jpg)

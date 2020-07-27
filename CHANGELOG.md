@@ -1,5 +1,20 @@
 # Version History
 
+### July 27th, 2020 (HOPE 2020 Release)
+- Update README
+- Update PyPi README
+- Bump version to 1.61
+
+### July 4th, 2020
+- Add option to log played tracks to file
+- Add PID file creation/detection
+
+### July 1st, 2020
+- Fix for MPlayer HTTPS links not working on Mac OS
+
+### June 30th, 2020
+- Starting script with -v will display backend player output for debug
+
 ### May 17th, 2020
 - Update README
 - Update PyPi README

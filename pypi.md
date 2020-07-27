@@ -1,11 +1,11 @@
 This simple player for [SomaFM](https://somafm.com/) keeps the distractions, and system resource utilization, to an absolute minimum. The look of this player was inspired equally by the excellent SomaFM terminal interfaces which were already available, and the 90's hacker aesthetic that I seem to find myself nostalgic for when listening to a Shoutcast stream at 2AM.
 
-As of the current version, the player supports completely unnecessary features like desktop notifications and Chromecast support at no extra charge.
+As of the current version, the player supports completely unnecessary features like desktop notifications and Chromecast support at no extra charge. Known to work on Linux (including Raspberry Pi and Chrome OS's Crostini) and Mac OS.
 
 For an up-to-date list of what's new, check the [Changelog](CHANGELOG.md)
 
 ## Dependencies
-Using this program requires the Python 3 versions of the following libraries:
+At minimum, this program requires Python 3 versions of the following libraries:
 
 * [colorama](https://pypi.org/project/colorama/)
 * [requests](https://3.python-requests.org/)
