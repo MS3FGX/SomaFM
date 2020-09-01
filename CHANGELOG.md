@@ -1,5 +1,8 @@
 # Version History
 
+### September 1st, 2020
+- Make sure PID is deleted in fringe cases
+
 ### July 27th, 2020 (HOPE 2020 Release)
 - Update README
 - Update PyPi README

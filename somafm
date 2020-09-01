@@ -101,6 +101,10 @@ def signal_handler(sig, frame):
     # Kill any sneaky players
     for player_name in players:
         subprocess.call(['killall', '-q', player_name])
+    clean_exit()
+
+# Do necessary cleanup when closing on good terms
+def clean_exit():
     # Delete PID file
     os.unlink(pid_file)
     sys.exit(0)
@@ -144,7 +148,7 @@ def configPlayer():
     if not player['name']:
         print(Fore.RED + "No supported player found!")
         print(Fore.WHITE + "Please check documentation for a list of supported players.")
-        exit()
+        clean_exit()
 
 # Download master list of channels
 def downloadChannels():
@@ -160,13 +164,13 @@ def downloadChannels():
         channel_raw = requests.get(url, timeout=15)
     except requests.exceptions.Timeout:
         print("Timeout!")
-        exit()
+        clean_exit()
     except requests.exceptions.ConnectionError:
         print("Network Error!")
-        exit()
+        clean_exit()
     except requests.exceptions.RequestException as e:
         print("Unknown Error!")
-        exit()
+        clean_exit()
 
     # Put channels in list
     channel_list = channel_raw.json()['channels']
@@ -279,12 +283,12 @@ def channelGet(request, channel_name):
                             return(stream['url'].replace('https', 'http'))
             else:
                 print(Fore.RED + "Unknown channel operation!")
-                exit()
+                clean_exit()
 
     # If we get here, no match
     print(Fore.RED + "Channel not found!")
     print(Fore.WHITE + "Double check the name of the channel and try again.")
-    exit()
+    clean_exit()
 
 # Stream channel with media player
 def startStream(channel_name):
@@ -297,7 +301,7 @@ def startStream(channel_name):
         print(Fore.RED + "FAILED")
         print("")
         print(Fore.WHITE + "Playback encountered an unknown error.")
-        exit()
+        clean_exit()
     print("OK")
 
     # Hand off to info display
@@ -319,7 +323,7 @@ def startCast(channel_name):
         print(Fore.RED + "FAILED")
         print("")
         print(Fore.WHITE + "Double check the device name and try again.")
-        exit()
+        clean_exit()
 
     # Attempt to start stream
     try:
@@ -331,7 +335,7 @@ def startCast(channel_name):
         print(Fore.RED + "FAILED")
         print("")
         print(Fore.WHITE + "Stream failed to start on Chromecast.")
-        exit()
+        clean_exit()
     print("OK")
 
     # Start player with no audio to get track info
@@ -343,14 +347,14 @@ def startCast(channel_name):
         elif player['name'] == 'mpv':
             # Playing without audio doesn't seem to work in mpv, so bail out for now
             print(Fore.RED + "Cast sync not supported on mpv.")
-            exit()
+            clean_exit()
 
         try:
             playstream = subprocess.Popen([player['name'], player['sarg1'], player['sarg2'], stream_url],
                          stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=False)
         except:
             print(Fore.RED + "Track Sync Failed!")
-            exit()
+            clean_exit()
 
         # Hand off to info display
         streamInfo(playstream)
@@ -360,7 +364,7 @@ def startCast(channel_name):
     else:
         print(Fore.RED + "--------------------------")
         print(Fore.WHITE + "Now playing: " + Fore.CYAN + stream_name)
-        exit()
+        clean_exit()
 
 # Determine if track is a Station ID
 def stationID(track):
@@ -500,11 +504,11 @@ if args.delete:
         shutil.rmtree(cache_dir)
     except:
         print("Error while clearing cache!")
-        exit()
+        clean_exit()
 
     # If we get here, sucess
     print("Cache cleared.")
-    exit()
+    clean_exit()
 
 # Get screen ready
 colorama.init()
@@ -545,7 +549,7 @@ if args.about:
     print("")
     print(Fore.BLUE + "https://somafm.com/support/")
     print("")
-    exit()
+    clean_exit()
 
 # Create cache directory if doesn't exist
 if not os.path.exists(cache_dir):
@@ -555,12 +559,12 @@ if args.list:
     # Always download, this allows manual update
     downloadChannels()
     listChannels()
-    exit()
+    clean_exit()
 
 if args.stats:
     downloadChannels()
     showStats()
-    exit()
+    clean_exit()
 
 # If we get here, we are playing
 # Check for player binaries before we get too comfortable
@@ -599,7 +603,7 @@ if args.cast:
     else:
         print(Fore.RED + "Chromecast Support Disabled!")
         print(Fore.WHITE + "Please install the pychromecast library.")
-        exit()
+        clean_exit()
 else:
     # Else, start stream
     startStream(args.channel)
