@@ -14,6 +14,7 @@ import requests
 import argparse
 import colorama
 import platform
+import tempfile
 import subprocess
 from random import randrange
 from datetime import datetime
@@ -72,8 +73,11 @@ track_file = "/tmp/somafm_tracks.txt"
 # SomaFM channel list
 url = "https://somafm.com/channels.json"
 
+# Generate safe temporary directory on each OS
+tmp_dir = tempfile.gettempdir()
+
 # Directory for cache
-cache_dir = "/tmp/soma_cache"
+cache_dir = tmp_dir + "/soma_cache"
 
 # Directory for channel icons
 icon_dir = cache_dir + "/icons"
@@ -85,7 +89,7 @@ image_size = "xlimage"
 channel_file = cache_dir + "/channel_list"
 
 # PID file
-pid_file = "/tmp/soma.pid"
+pid_file = tmp_dir + "/soma.pid"
 
 # Known station IDs
 station_ids = ["SomaFM", "Big Url"]
