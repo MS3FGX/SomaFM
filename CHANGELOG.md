@@ -3,6 +3,7 @@
 ### December 5th, 2020
 - Add ability to select Chromecast device from command line
 - Use tempfile to find safe temporary directory on each OS
+- Use HTTP link for MPlayer on Windows/Mac OS
 
 ### September 1st, 2020
 - Make sure PID is deleted in fringe cases

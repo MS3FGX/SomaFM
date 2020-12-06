@@ -258,8 +258,8 @@ def channelGet(request, channel_name):
             if request == "VERIFY":
                 return()
             elif request == "PLS":
-                # Give MPlayer on Mac OS an HTTP PLS link
-                if player['name'] == "mplayer" and platform.system() == "Darwin":
+                # Give MPlayer on Mac OS/Windows an HTTP PLS link
+                if player['name'] == "mplayer" and platform.system() != "Linux":
                     return(channel['playlists'][quality_num]['url'].replace('https', 'http'))
                 # On Linux, use HTTPS for future proofing
                 return(channel['playlists'][quality_num]['url'])
