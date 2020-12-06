@@ -2,16 +2,17 @@
 # Python SomaFM Player
 This simple player for [SomaFM](https://somafm.com/) keeps the distractions, and system resource utilization, to an absolute minimum. The look of this player was inspired equally by the excellent SomaFM terminal interfaces which were already available, and the 90's hacker aesthetic that I seem to find myself nostalgic for when listening to a Shoutcast stream at 2AM.
 
-As of the current version, the player supports completely unnecessary features like desktop notifications and Chromecast support at no extra charge. Known to work on Linux (including Raspberry Pi and Chrome OS's Crostini) and Mac OS.
+As of the current version, the player supports completely unnecessary features like desktop notifications and Chromecast support at no extra charge. Known to work on Linux (including Raspberry Pi and Chrome OS's Crostini), Mac OS, and even Windows.
 
 For an up-to-date list of what's new, check the [Changelog](CHANGELOG.md)
 
 ## Installation
-Starting with version 1.5, this stable version of this program is available on PyPi and can be installed with the following command:
+Starting with version 1.5, the stable version of this program is available on PyPi and can be installed with the following command:
 
 ```console
-pip install somafm
+pip3 install somafm
 ```
+If you'd like to keep up with the latest version, just clone this repository to your system and run the script.
 
 ## Dependencies
 At minimum, this program requires Python 3 versions of the following libraries:
@@ -42,7 +43,7 @@ Download the latest master list of SomaFM channels and display their description
 This option shows the number of listeners for each currently online SomaFM channel, along with a total listener count.
 
 #### --cast
-If you have the [pychromecast](https://github.com/balloob/pychromecast) library installed, this option will start playback of the given SomaFM channel on the Chromecast device specified by the `chromecast_name` variable.
+If you have the [pychromecast](https://github.com/balloob/pychromecast) library installed, this option will start playback of the given SomaFM channel on the given Chromecast device. If no device name is given, the default specified by the `chromecast_name` variable will be used.
 
 ## Supported Players
 This program is simply a front-end, playback requires one of these media players to be installed:

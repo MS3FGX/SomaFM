@@ -5,6 +5,8 @@
 - Use tempfile to find safe temporary directory on each OS
 - Use HTTP link for MPlayer on Windows/Mac OS
 - Use cls on Windows
+- Update README
+- Release as v1.7
 
 ### September 1st, 2020
 - Make sure PID is deleted in fringe cases
