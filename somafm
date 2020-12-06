@@ -466,7 +466,7 @@ parser = argparse.ArgumentParser(description='Simple Python 3 player for SomaFM,
 parser.add_argument('-l', '--list', action='store_true', help='Download and display list of channels')
 parser.add_argument('-s', '--stats', action='store_true', help='Display current listener stats')
 parser.add_argument('-a', '--about', action='store_true', help='Show information about SomaFM')
-parser.add_argument('-c', '--cast', action='store_true', help='Start playback on Chromecast')
+parser.add_argument('-c', '--cast', nargs='?', default=False, help='Start playback on Chromecast')
 parser.add_argument('-f', '--file', action='store_true', help='Enable experimental track logging for this session')
 parser.add_argument('-n', '--notify', action='store_true', help='Enable experimental desktop notifications for this session')
 parser.add_argument('-p', '--player', action='store_true', help='Show which player is being used for this session')
@@ -474,6 +474,13 @@ parser.add_argument('-v', '--verbose', action='store_true', help='For debug use,
 parser.add_argument('-d', '--delete', action='store_true', help='Delete cache files')
 parser.add_argument("channel", nargs='?', const=1, default=default_chan, help="Channel to stream. Default is Groove Salad")
 args = parser.parse_args()
+
+# None means user gave -c option, but no device name
+if args.cast is None:
+    args.cast = True
+else:
+    # If there is string after -c, use it as device name
+    chromecast_name = args.cast
 
 # Check for existing PID file
 if os.path.isfile(pid_file):

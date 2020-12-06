@@ -1,5 +1,8 @@
 # Version History
 
+### December 5th, 2020
+- Add ability to select Chromecast device from command line
+
 ### September 1st, 2020
 - Make sure PID is deleted in fringe cases
 
