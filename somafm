@@ -523,7 +523,10 @@ if args.delete:
 
 # Get screen ready
 colorama.init()
-os.system('clear')
+if platform.system() == "Windows":
+    os.system('cls')
+else:
+    os.system('clear')
 print(Style.BRIGHT, end='')
 
 if args.about:
