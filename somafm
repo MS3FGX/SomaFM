@@ -296,11 +296,14 @@ def channelGet(request, channel_name):
 
 # Stream channel with media player
 def startStream(channel_name):
+    # Verify stream exists before starting stream
+    stream_link = channelGet(player['stream'], args.channel)
+
     # Open stream
     print("Loading stream...", end='')
     try:
-        playstream = subprocess.Popen([player['name'], player['arg'], channelGet(player['stream'],
-                     args.channel)], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=False)
+        playstream = subprocess.Popen([player['name'], player['arg'], stream_link],
+                    stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=False)
     except:
         print(Fore.RED + "FAILED")
         print("")

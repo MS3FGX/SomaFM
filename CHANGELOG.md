@@ -1,5 +1,8 @@
 # Version History
 
+### December 10th, 2020
+- Fix unclean exit when channel not found
+
 ### December 5th, 2020
 - Add ability to select Chromecast device from command line
 - Use tempfile to find safe temporary directory on each OS
