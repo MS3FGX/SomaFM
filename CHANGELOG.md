@@ -1,5 +1,9 @@
 # Version History
 
+### November 26th, 2021
+- Strip HTTPS from all playlist links
+- Remove player/OS specific HTTPS fixes (now redundant)
+
 ### December 10th, 2020
 - Fix unclean exit when channel not found
 

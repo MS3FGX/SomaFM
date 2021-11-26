@@ -2,7 +2,7 @@
 # Python frontend for playing SomaFM with MPlayer
 # Written by Tom Nardi (MS3FGX@gmail.com)
 # Licensed under the GPLv3, see "COPYING"
-version = "1.7"
+version = "1.71"
 
 import re
 import os
@@ -179,6 +179,11 @@ def downloadChannels():
     # Put channels in list
     channel_list = channel_raw.json()['channels']
 
+    # Strip HTTPS from playlist URLs
+    for channel in channel_list:
+        for playlist_link in channel['playlists']:
+            playlist_link['url'] = playlist_link['url'].replace('https', 'http')
+
     # Write to file
     with open(channel_file, 'wb') as fp:
         pickle.dump(channel_list, fp)
@@ -258,10 +263,6 @@ def channelGet(request, channel_name):
             if request == "VERIFY":
                 return()
             elif request == "PLS":
-                # Give MPlayer on Mac OS/Windows an HTTP PLS link
-                if player['name'] == "mplayer" and platform.system() != "Linux":
-                    return(channel['playlists'][quality_num]['url'].replace('https', 'http'))
-                # On Linux, use HTTPS for future proofing
                 return(channel['playlists'][quality_num]['url'])
             elif request == "NAME":
                 return(channel['title'])
@@ -280,11 +281,9 @@ def channelGet(request, channel_name):
                     if "File1" in line:
                         return(line.split('=')[1])
             elif request == "MP3":
-                # For mpg123 compatibility, return HTTP MP3 stream
-                # This may break in the future if Soma goes all HTTPS
                 for stream in channel['playlists']:
                         if stream['format'] == 'mp3':
-                            return(stream['url'].replace('https', 'http'))
+                            return(stream['url'])
             else:
                 print(Fore.RED + "Unknown channel operation!")
                 clean_exit()
