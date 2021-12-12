@@ -1,5 +1,8 @@
 # Version History
 
+### December 11th, 2021
+- Dynamically space channel name column when using -l
+
 ### November 26th, 2021
 - Strip HTTPS from all playlist links
 - Remove player/OS specific HTTPS fixes (now redundant)

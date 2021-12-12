@@ -224,10 +224,14 @@ def downloadIcons():
 
 # Loop through channels and print their descriptions
 def listChannels():
+    # Find longest channel name
+    channel_length = max(len(channel['title']) for channel in channel_list)
+
     # Loop through channels
     print(Fore.RED + "------------------------------")
     for channel in channel_list:
-        print(Fore.BLUE + '{:>22}'.format(channel['title']) + Fore.WHITE, end=' : ')
+        # Adjust spacing to fit longest channel name
+        print(Fore.BLUE + '{cname:>{cwidth}}'.format(cwidth=channel_length, cname=channel['title']) + Fore.WHITE, end=' : ')
         print(Fore.GREEN + channel['description'] + Fore.RESET)
 
 # Show sorted list of listeners
