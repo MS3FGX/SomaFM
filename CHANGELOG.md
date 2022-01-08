@@ -1,5 +1,8 @@
 # Version History
 
+### January 8th, 2022
+- Release as v1.71
+
 ### December 11th, 2021
 - Dynamically space channel name column when using -l
 
