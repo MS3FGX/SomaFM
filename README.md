@@ -20,7 +20,7 @@ At minimum, this program requires Python 3 versions of the following libraries:
 * [colorama](https://pypi.org/project/colorama/)
 * [requests](https://3.python-requests.org/)
 
-## Usage
+## Channel Selection
 Simply running `somafm` with no options will start streaming "Groove Salad." In the somewhat unlikely event you wanted to listen to something else, simply give it the channel name like so:
 
 ```console
@@ -32,7 +32,15 @@ Channel entry is not case sensitive and uses a certain amount of "fuzzy" matchin
 ```console
 somafm def
 ```
-In addition, the following options are available:
+
+Finally, if you're not sure what you want to listen to, you can pass the -r option to let the script randomly select from one of the currently active channels:
+
+```console
+somafm -r
+```
+
+## Optional Arguments
+While not required for basic usage, the following arguments are also available:
 
 #### --list
 Download the latest master list of SomaFM channels and display their descriptions.
@@ -59,8 +67,8 @@ There is currently experimental support for desktop notifications on Linux using
 ## Future Development
 While the script is already at a point where I would consider it feature complete, there are a few things I think might be interesting to look into:
 
-* Random channel selection
 * Display keyboard controls during playback
+* ~~Random channel selection~~ (Thanks blutack)
 * ~~Support other players (mpv/VLC)~~
 * ~~Filter station IDs from track listing~~
 * ~~Desktop notifications on new track~~
