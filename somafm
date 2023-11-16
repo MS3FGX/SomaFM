@@ -646,6 +646,7 @@ if desktop_notifications:
         # Otherwise, get icons
         downloadIcons()
 
+# If -r option given and no channel provided, pick random channel from list
 if args.random and args.channel == None:
     args.channel = choice([chan['title'] for chan in channel_list])
 elif args.channel == None:
