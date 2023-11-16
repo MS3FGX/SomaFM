@@ -101,6 +101,8 @@ players = ['mplayer','mpg123','mpv']
 #-----------------------------------------------------------------------#
 # Catch ctrl-c
 def signal_handler(sig, frame):
+    # Re-enable cursor if it was turned off
+    print('\033[?25h')
     print(Fore.RED + "Force closing...")
     # Kill any sneaky players
     for player_name in players:
@@ -388,6 +390,9 @@ def stationID(track):
 
 # Print stream and track information
 def streamInfo(playstream):
+    # Hide cursor
+    print('\033[?25l', end="")
+
     InfoPrinted = False
     print(Fore.RED + "--------------------------")
     # Parse output
@@ -404,7 +409,7 @@ def streamInfo(playstream):
                 # mpv doesn't give us much info, so have to pull channel name from args
                 print(Fore.CYAN + "Channel: " + Fore.WHITE + channelGet('NAME', args.channel))
                 print(Fore.RED + "--------------------------")
-                print(Fore.WHITE + "Press Crtl+C to Quit")
+                print(Fore.WHITE + "Press Crtl+C to Quit", end="")
                 InfoPrinted = True
 
             # mpg123
@@ -414,7 +419,7 @@ def streamInfo(playstream):
                 print(Fore.CYAN + "Channel: " + Fore.WHITE + line.decode().split(':', 2)[1].strip())
             if line.startswith(b'MPEG'):
                 print(Fore.CYAN + "Bitrate: " + Fore.WHITE + line.decode().strip())
-                print(Fore.RED + "--------------------------")
+                print(Fore.RED + "--------------------------", end="")
                 InfoPrinted = True
 
             # Mplayer
@@ -426,11 +431,34 @@ def streamInfo(playstream):
                 print(Fore.CYAN + "Genre: " + Fore.WHITE + line.decode().split(':', 1)[1].strip())
             if line.startswith(b'Bitrate'):
                 print(Fore.CYAN + "Bitrate: " + Fore.WHITE + line.decode().split(':', 1)[1].strip())
-                print(Fore.RED + "--------------------------")
+                print(Fore.RED + "--------------------------", end="")
                 InfoPrinted = True
+
+
+        # Save track to file
+        if line.startswith(b'Capturing') and CaptureEnable:
+            # Print save icon next to track, flush output
+            print(" " + u"\U0001F4BE", end="")
+            sys.stdout.flush()
+
+            # Open favorites file for append
+            fav = open("favorites.txt", 'a')
+
+            # Write out current track
+            fav.write(track + "\n")
+
+            # Close file
+            fav.close()
+            
+            # Set flag to false so this only runs once
+            CaptureEnable = False
+
 
         # Updates on every new track
         if line.startswith(b'ICY Info:') or line.startswith(b'ICY-META:') or line.startswith(b' icy-title:'):
+            # Reset capture flag
+            CaptureEnable = True
+
             # mpv format is different
             if line.startswith(b' icy-title:'):
                 track = line.decode().split(':', 1)[1].strip()
@@ -441,6 +469,7 @@ def streamInfo(playstream):
                 track = match.group(1)
 
             # Print date before track
+            print("")
             print(Fore.BLUE + datetime.now().strftime("%H:%M:%S"), end=' | ')
 
             # Check if track is a station ID once, save value to variable
@@ -448,9 +477,12 @@ def streamInfo(playstream):
 
             # Highlight station IDs in yellow
             if station_highlights and IDStatus:
-                print(Fore.YELLOW + track)
+                print(Fore.YELLOW + track, end="")
             else:
-                print(Fore.GREEN + track)
+                print(Fore.GREEN + track, end="")
+
+            # Flush line so far
+            sys.stdout.flush()
 
             # Before doing anything further, make sure it's not a Station ID
             if not IDStatus:
@@ -644,6 +676,7 @@ if log_tracks:
     track_log.close()
 
 # Print exit message
+print('\033[?25h')
 print(Fore.RESET + "Playback stopped after {:02}:{:02}:{:02}".format(int(hours), int(minutes), int(seconds)))
 
 # Delete PID file
