@@ -1,5 +1,11 @@
 # Version History
 
+## November 16th, 2023
+- Add experimental track saving (press C during playback)
+
+## November 10th, 2023
+- Add random channel option (Thanks blutack)
+
 ### January 8th, 2022
 - Release as v1.71
 
