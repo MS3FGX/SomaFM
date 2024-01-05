@@ -92,7 +92,7 @@ channel_file = cache_dir + "/channel_list"
 pid_file = tmp_dir + "/soma.pid"
 
 # Known station IDs
-station_ids = ["SomaFM", "Big Url"]
+station_ids = ["SomaFM", "Big Url", "Nerd Show"]
 
 # Supported players
 players = ['mplayer','mpg123','mpv']
