@@ -382,7 +382,7 @@ def startCast(channel_name):
 def stationID(track):
     # Loop through known IDs, return on match
     for station in station_ids:
-        if station.capitalize() in track.capitalize():
+        if station.upper() in track.upper():
             return(True)
 
     # If we get here, no match was found
