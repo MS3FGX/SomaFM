@@ -1,5 +1,8 @@
 # Version History
 
+## March 16th, 2024
+- Add -S switch to enable experimental HTTPS support
+
 ## January 5th, 2024
 - Fix station ID matching
 - Add Nerd Show to list of station IDs

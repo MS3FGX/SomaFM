@@ -59,6 +59,13 @@ This program is simply a front-end, playback requires one of these media players
 * [mpg123](https://www.mpg123.de/) (Lightweight, but lacks AAC support)
 * [mpv](https://mpv.io/) (Slow to start stream, minimal functionality)
 
+## HTTPS Support
+By default streams are played via HTTP, but you can enable experimental HTTPS support by using the `-S` or `--ssl` argument.
+
+When this argument is given, the script will clear the cached channel info and re-download it via HTTPS. From that point on, all streaming operations will attempt to use HTTPS, whether or not you add the `-S` argument.
+
+At the time of this writing, HTTPS doesn't seem to be very well supported with the players used by this script. At least on Linux, the only one that appears to work is `mpv`. If you tried to enable HTTPS and now find that none of the channels will play, just use the `-d` option to delete the cache and things should return to normal.
+
 ## Desktop Notifications
 There is currently experimental support for desktop notifications on Linux using libnotify. They can be enabled by changing the value of the boolean variable `desktop_notifications` or turned on temporarily with the `-n` option.
 
