@@ -71,7 +71,7 @@ track_file = "/tmp/somafm_tracks.txt"
 #-----------------------------------------------------------------------
 
 # SomaFM channel list
-url = "https://somafm.com/channels.json"
+url = "somafm.com/channels.json"
 
 # Generate safe temporary directory on each OS
 tmp_dir = tempfile.gettempdir()
@@ -162,12 +162,19 @@ def downloadChannels():
     global channel_list
 
     # Let user know we're downloading
-    print("Downloading channel list...", end='')
+    if args.ssl:
+        print("Downloading channel list via HTTPS...", end='')
+        protocol = "https://"
+    else:
+        print("Downloading channel list...", end='')
+        protocol = "http://"
+
+    # Let user know we're downloading
     sys.stdout.flush()
 
     # Pull down JSON file
     try:
-        channel_raw = requests.get(url, timeout=15)
+        channel_raw = requests.get(protocol + url, timeout=15)
     except requests.exceptions.Timeout:
         print("Timeout!")
         clean_exit()
@@ -180,11 +187,6 @@ def downloadChannels():
 
     # Put channels in list
     channel_list = channel_raw.json()['channels']
-
-    # Strip HTTPS from playlist URLs
-    for channel in channel_list:
-        for playlist_link in channel['playlists']:
-            playlist_link['url'] = playlist_link['url'].replace('https', 'http')
 
     # Write to file
     with open(channel_file, 'wb') as fp:
@@ -304,8 +306,13 @@ def startStream(channel_name):
     # Verify stream exists before starting stream
     stream_link = channelGet(player['stream'], args.channel)
 
+    # Show HTTPS notification
+    if "https" in stream_link:
+        print("Loading stream (HTTPS)...", end='')
+    else:
+        print("Loading stream...", end='')
+
     # Open stream
-    print("Loading stream...", end='')
     try:
         playstream = subprocess.Popen([player['name'], player['arg'], stream_link],
                     stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=False)
@@ -515,6 +522,7 @@ parser.add_argument('-p', '--player', action='store_true', help='Show which play
 parser.add_argument('-v', '--verbose', action='store_true', help='For debug use, prints all output of media player.')
 parser.add_argument('-d', '--delete', action='store_true', help='Delete cache files')
 parser.add_argument('-r', '--random', action='store_true', help='Choose a random channel at startup')
+parser.add_argument('-S', '--ssl', action='store_true', help='Enable HTTPS, not supported on all platforms')
 parser.add_argument("channel", nargs='?', const=1, default=None, help="Channel to stream. Default is Groove Salad (unless the --random flag is passed)")
 args = parser.parse_args()
 
@@ -622,6 +630,10 @@ if args.stats:
 # If we get here, we are playing
 # Check for player binaries before we get too comfortable
 configPlayer()
+
+# If SSL enabled, force reloading channels
+if args.ssl:
+    downloadChannels()
 
 # See if we already have a channel list
 if os.path.isfile(channel_file) == False:
