@@ -533,12 +533,26 @@ else:
     # If there is string after -c, use it as device name
     chromecast_name = args.cast
 
+# Check if the process is still running
+def is_process_running(pid):
+    try:
+        os.kill(pid, 0)
+    except OSError:
+        return False
+    else:
+        return True
+
 # Check for existing PID file
 if os.path.isfile(pid_file):
-    # There can be only one
-    print("SomaFM is already running!")
-    print("If you think this message is a mistake, delete the file: " + pid_file)
-    sys.exit()
+    with open(pid_file, 'r') as f:
+        pid = int(f.read().strip())
+    if is_process_running(pid):
+        print("SomaFM is already running!")
+        print("If you think this message is a mistake, delete the file: " + pid_file)
+        sys.exit()
+    else:
+        # PID file exists, but the process is not running
+        os.remove(pid_file)
 
 # If we get here, create one
 with open(pid_file, 'w') as pidfile:
