@@ -1,5 +1,8 @@
 # Version History
 
+## April 29th, 2024
+- Improve PID handling to prevent false positives (Thanks Jamison Robey)
+
 ## March 16th, 2024
 - Add -S switch to enable experimental HTTPS support
 
